@@ -71,6 +71,8 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(SettingsServiceProvider::class);
         }
 
+        $this->app->register(DesignifyServiceProvider::class);
+
         $this->app->singleton('extensions.themes', function () {
             return new Theme();
         });

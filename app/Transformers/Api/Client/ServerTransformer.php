@@ -72,6 +72,11 @@ class ServerTransformer extends BaseClientTransformer
             // This field is deprecated, please use "status".
             'is_installing' => !$server->isInstalled(),
             'is_transferring' => !is_null($server->transfer),
+            'nest_id' => $server->nest_id,
+            'egg_id' => $server->egg_id,
+            'egg_banner' => $server->egg->banner,
+            'containerText' => $server->node->containerText,
+            'daemonText' => $server->node->daemonText,
 
             // Blueprint-related fields.
             'BlueprintFramework' => [

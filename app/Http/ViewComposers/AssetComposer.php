@@ -27,8 +27,13 @@ class AssetComposer
         ]);
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
-            'name' => config('app.name') ?? 'Pterodactyl',
+            'name' => config('app.name') ?? 'Reviactyl',
+            'logo' => config('app.logo') ?? '/reviactyl/logo.png',
+            'icon' => config('app.icon') ?? '/favicons/favicon.ico',
             'locale' => config('app.locale') ?? 'en',
+            'pwa' => config('app.pwa', false),
+            'debug' => config('app.debug', false),
+            'avatar' => config('app.avatar') ?? 'gravatar',
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key') ?? '',

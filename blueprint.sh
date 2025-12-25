@@ -9,7 +9,7 @@
 # and override the variables there.
 
 BLUEPRINT_ENGINE="solstice"
-REPOSITORY="BlueprintFramework/framework"
+REPOSITORY="reviactyl/blueprint"
 REPOSITORY_BRANCH="main"
 VERSION="rolling" #;
 
