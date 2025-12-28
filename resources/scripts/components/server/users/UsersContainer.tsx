@@ -11,11 +11,15 @@ import { httpErrorToHuman } from '@/api/http';
 import Can from '@/components/elements/Can';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import tw from 'twin.macro';
+import Card from '@/reviactyl/ui/Card';
+import { UsersIcon } from '@heroicons/react/solid';
+import { useTranslation } from 'react-i18next';
 
 import BeforeContent from '@blueprint/components/Server/Users/BeforeContent';
 import AfterContent from '@blueprint/components/Server/Users/AfterContent';
 
 export default () => {
+    const { t } = useTranslation('server/users');
     const [loading, setLoading] = useState(true);
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -51,16 +55,20 @@ export default () => {
     }
 
     return (
-        <ServerContentBlock title={'Users'}>
+        <ServerContentBlock title={t('title')}>
             <FlashMessageRender byKey={'users'} css={tw`mb-4`} />
             <BeforeContent />
             {!subusers.length ? (
-                <p css={tw`text-center text-sm text-neutral-300`}>It looks like you don&apos;t have any subusers.</p>
+                <Card>
+                    <p css={tw`flex justify-center text-center text-sm text-gray-400`}>
+                        <UsersIcon className='w-5 h-5 mr-1' /> It looks like you don&apos;t have any subusers.
+                    </p>
+                </Card>
             ) : (
                 subusers.map((subuser) => <UserRow key={subuser.uuid} subuser={subuser} />)
             )}
             <Can action={'user.create'}>
-                <div css={tw`flex justify-end mt-6`}>
+                <div css={tw`flex justify-end mt-2`}>
                     <AddSubuserButton />
                 </div>
             </Can>
