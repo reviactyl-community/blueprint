@@ -1,16 +1,23 @@
 const colors = require('tailwindcss/colors');
 
+function reviactyl(variable) {
+  return ({ opacityValue }) =>
+    opacityValue !== undefined
+      ? `rgb(var(${variable}) / ${opacityValue})`
+      : `rgb(var(${variable}))`;
+}
+
 const gray = {
-    50: 'hsl(216, 33%, 97%)',
-    100: 'hsl(214, 15%, 91%)',
-    200: 'hsl(210, 16%, 82%)',
-    300: 'hsl(211, 13%, 65%)',
-    400: 'hsl(211, 10%, 53%)',
-    500: 'hsl(211, 12%, 43%)',
-    600: 'hsl(209, 14%, 37%)',
-    700: 'hsl(209, 18%, 30%)',
-    800: 'hsl(209, 20%, 25%)',
-    900: 'hsl(210, 24%, 16%)',
+    50: reviactyl('--color-50'),
+    100: reviactyl('--color-100'),
+    200: reviactyl('--color-200'),
+    300: reviactyl('--color-300'),
+    400: reviactyl('--color-400'),
+    500: reviactyl('--color-500'),
+    600: reviactyl('--color-600'),
+    700: reviactyl('--color-700'),
+    800: reviactyl('--color-800'),
+    900: reviactyl('--color-900'),
 };
 
 module.exports = {
@@ -21,6 +28,7 @@ module.exports = {
         extend: {
             fontFamily: {
                 header: ['"IBM Plex Sans"', '"Roboto"', 'system-ui', 'sans-serif'],
+                sans: ["var(--font-family)"], 
             },
             colors: {
                 black: '#131a20',
@@ -30,6 +38,10 @@ module.exports = {
                 gray: gray,
                 neutral: gray,
                 cyan: colors.cyan,
+                reviactyl: reviactyl('--color-primary'),
+                success: reviactyl('--color-success'),
+                danger: reviactyl('--color-danger'),
+                secondary: reviactyl('--color-secondary'),
             },
             fontSize: {
                 '2xs': '0.625rem',
@@ -40,6 +52,9 @@ module.exports = {
             borderColor: theme => ({
                 default: theme('colors.neutral.400', 'currentColor'),
             }),
+            borderRadius: {
+                ui: 'var(--radius)',
+            },
         },
     },
     plugins: [
