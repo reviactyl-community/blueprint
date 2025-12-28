@@ -13,11 +13,16 @@ import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
+import Card from '@/reviactyl/ui/Card';
+import Title from '@/reviactyl/ui/Title';
+import { EmojiSadIcon } from '@heroicons/react/solid';
+import { useTranslation } from 'react-i18next';
 
 import BeforeContent from '@blueprint/components/Dashboard/Serverlist/BeforeContent';
 import AfterContent from '@blueprint/components/Dashboard/Serverlist/AfterContent';
 
 export default () => {
+    const { t } = useTranslation('dashboard/index');
     const { search } = useLocation();
     const defaultPage = Number(new URLSearchParams(search).get('page') || '1');
 
@@ -52,38 +57,54 @@ export default () => {
     }, [error]);
 
     return (
-        <PageContentBlock title={'Dashboard'} showFlashKey={'dashboard'}>
+        <PageContentBlock className='pr-2' title={t('title')} showFlashKey={'dashboard'}>
             <BeforeContent />
-            {rootAdmin && (
-                <div css={tw`mb-2 flex justify-end items-center`}>
-                    <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
-                        {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
-                    </p>
-                    <Switch
-                        name={'show_all_servers'}
-                        defaultChecked={showOnlyAdmin}
-                        onChange={() => setShowOnlyAdmin((s) => !s)}
-                    />
+            <div className='grid lg:grid-cols-2 gap-2 py-4'>
+                <div>
+                    <Title className='text-4xl'>{t('title')}</Title>
                 </div>
-            )}
+                {rootAdmin && (
+                    <div className='flex lg:justify-end justify-center'>
+                        <div className='mb-2 pt-4'>
+                            <div className='flex lg:justify-end sm:justify-center items-center space-x-2'>
+                                <p className='uppercase text-xs text-gray-400'>
+                                    {showOnlyAdmin ? t('other-servers') : t('your-servers')}
+                                </p>
+                                <Switch
+                                    name={'show_all_servers'}
+                                    defaultChecked={showOnlyAdmin}
+                                    onChange={() => setShowOnlyAdmin((s) => !s)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
-                <Pagination data={servers} onPageSelect={setPage}>
-                    {({ items }) =>
-                        items.length > 0 ? (
-                            items.map((server, index) => (
-                                <ServerRow key={server.uuid} server={server} css={index > 0 ? tw`mt-2` : undefined} />
-                            ))
-                        ) : (
-                            <p css={tw`text-center text-sm text-neutral-400`}>
-                                {showOnlyAdmin
-                                    ? 'There are no other servers to display.'
-                                    : 'There are no servers associated with your account.'}
-                            </p>
-                        )
-                    }
-                </Pagination>
+                <div className='grid lg:grid-cols-2 gap-3'>
+                    <Pagination data={servers} onPageSelect={setPage}>
+                        {({ items }) =>
+                            items.length > 0 ? (
+                                items.map((server, index) => (
+                                    <ServerRow
+                                        key={server.uuid}
+                                        server={server}
+                                        css={index > 0 ? tw`mt-2` : undefined}
+                                    />
+                                ))
+                            ) : (
+                                <Card css={tw`col-span-1 lg:col-span-2`}>
+                                    <p className='flex justify-center text-center text-sm text-gray-400'>
+                                        <EmojiSadIcon className='w-5 h-5 mr-1' />{' '}
+                                        {showOnlyAdmin ? t('no-other-servers') : t('no-servers')}
+                                    </p>
+                                </Card>
+                            )
+                        }
+                    </Pagination>
+                </div>
             )}
             <AfterContent />
         </PageContentBlock>
