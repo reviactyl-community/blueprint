@@ -17,7 +17,7 @@ class BuildCachePlugin {
   loadCache() {
     try {
       return JSON.parse(fs.readFileSync(this.cacheFile, 'utf8'));
-    } catch (e) {
+    } catch {
       return {};
     }
   }
@@ -30,7 +30,7 @@ class BuildCachePlugin {
     try {
       const content = fs.readFileSync(filePath);
       return crypto.createHash('md5').update(content).digest('hex');
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -40,9 +40,7 @@ class BuildCachePlugin {
       compilation.hooks.buildModule.tap('BuildCachePlugin', (module) => {
         if (module.resource) {
           const hash = this.calculateHash(module.resource);
-          if (hash) {
-            this.newHashes[module.resource] = hash;
-          }
+          if (hash) this.newHashes[module.resource] = hash;
         }
       });
     });
@@ -59,10 +57,8 @@ module.exports = {
   cache: true,
   target: 'web',
   mode: process.env.NODE_ENV,
-  devtool: isProduction ? false : process.env.DEVTOOL || 'eval-source-map',
-  performance: {
-    hints: false,
-  },
+  devtool: isProduction ? false : (process.env.DEVTOOL || 'eval-source-map'),
+  performance: { hints: false },
   entry: ['react-hot-loader/patch', './resources/scripts/index.tsx'],
   output: {
     path: path.join(__dirname, '/public/assets'),
@@ -74,12 +70,23 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        exclude: /node_modules|\.spec\.tsx?$/,
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, 'resources/scripts'),
+          path.resolve(__dirname, 'node_modules/i18next-browser-languagedetector'),
+        ],
         loader: 'babel-loader',
         options: {
           cacheDirectory: true,
+          presets: [['@babel/preset-env', { targets: 'defaults' }]],
+          plugins: ['@babel/plugin-proposal-optional-chaining'],
         },
+      },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules|\.spec\.tsx?$/,
+        loader: 'babel-loader',
+        options: { cacheDirectory: true },
       },
       {
         test: /\.mjs$/,
@@ -89,13 +96,15 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          { loader: 'style-loader' },
+          'style-loader',
           {
             loader: 'css-loader',
             options: {
               modules: {
                 auto: true,
-                localIdentName: isProduction ? '[name]_[hash:base64:8]' : '[path][name]__[local]',
+                localIdentName: isProduction
+                  ? '[name]_[hash:base64:8]'
+                  : '[path][name]__[local]',
                 localIdentContext: path.join(__dirname, 'resources/scripts/components'),
               },
               sourceMap: !isProduction,
@@ -111,9 +120,7 @@ module.exports = {
       {
         test: /\.(png|jp(e?)g|gif)$/,
         loader: 'file-loader',
-        options: {
-          name: 'images/[name].[hash:8].[ext]',
-        },
+        options: { name: 'images/[name].[hash:8].[ext]' },
       },
       {
         test: /\.svg$/,
@@ -122,6 +129,7 @@ module.exports = {
       {
         test: /\.js$/,
         enforce: 'pre',
+        exclude: /i18next-browser-languagedetector/,
         loader: 'source-map-loader',
       },
     ],
@@ -136,40 +144,33 @@ module.exports = {
       '@blueprint': path.join(__dirname, '/resources/scripts/blueprint'),
     },
   },
-  externals: {
-    moment: 'moment',
-  },
+  externals: { moment: 'moment' },
   plugins: [
-    new BuildCachePlugin({
-      cacheFile: '.build-cache.json',
-    }),
+    new BuildCachePlugin({ cacheFile: '.build-cache.json' }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
       DEBUG: process.env.NODE_ENV !== 'production',
       WEBPACK_BUILD_HASH: Date.now().toString(16),
     }),
-    new AssetsManifestPlugin({ writeToDisk: true, publicPath: true, integrity: true, integrityHashes: ['sha384'] }),
+    new AssetsManifestPlugin({
+      writeToDisk: true,
+      publicPath: true,
+      integrity: true,
+      integrityHashes: ['sha384'],
+    }),
     new ForkTsCheckerWebpackPlugin({
       typescript: {
         mode: 'write-references',
-        diagnosticOptions: {
-          semantic: true,
-          syntactic: true,
-        },
+        diagnosticOptions: { semantic: true, syntactic: true },
       },
       eslint: isProduction
         ? undefined
-        : {
-            files: `${path.join(__dirname, '/resources/scripts')}/**/*.{ts,tsx}`,
-          },
+        : { files: `${path.join(__dirname, '/resources/scripts')}/**/*.{ts,tsx}` },
     }),
     process.env.ANALYZE_BUNDLE
-      ? new BundleAnalyzerPlugin({
-          analyzerHost: '0.0.0.0',
-          analyzerPort: 8081,
-        })
+      ? new BundleAnalyzerPlugin({ analyzerHost: '0.0.0.0', analyzerPort: 8081 })
       : null,
-  ].filter((p) => p),
+  ].filter(Boolean),
   optimization: {
     usedExports: true,
     sideEffects: false,
@@ -183,24 +184,17 @@ module.exports = {
         extractComments: false,
         terserOptions: {
           mangle: true,
-          output: {
-            comments: false,
-          },
+          output: { comments: false },
         },
       }),
     ],
   },
-  watchOptions: {
-    poll: 1000,
-    ignored: /node_modules/,
-  },
+  watchOptions: { poll: 1000, ignored: /node_modules/ },
   devServer: {
     compress: true,
     contentBase: path.join(__dirname, '/public'),
     publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
     allowedHosts: ['.pterodactyl.test'],
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
+    headers: { 'Access-Control-Allow-Origin': '*' },
   },
 };

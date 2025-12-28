@@ -43,6 +43,11 @@ export interface Server {
   isTransferring: boolean;
   variables: ServerEggVariable[];
   allocations: Allocation[];
+  nestId: number;
+  eggId: number;
+  eggBanner: string;
+  containerText: string;
+  daemonText: string;
 
   BlueprintFramework: {
     eggId: number;
@@ -74,6 +79,11 @@ export const rawDataToServerObject = ({ attributes: data }: FractalResponseData)
   allocations: ((data.relationships?.allocations as FractalResponseList | undefined)?.data || []).map(
     rawDataToServerAllocation
   ),
+  nestId: data.nest_id,
+  eggId: data.egg_id,
+  eggBanner: data.egg_banner,
+  containerText: data.containerText,
+  daemonText: data.daemonText,
 
   BlueprintFramework: {
     eggId: data.BlueprintFramework.egg_id,
