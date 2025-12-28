@@ -22,6 +22,8 @@ import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { FileActionCheckbox } from '@/components/server/files/SelectFileCheckbox';
 import { hashToPath } from '@/helpers';
 import style from './style.module.css';
+import Card from '@/reviactyl/ui/Card';
+import { useTranslation } from 'react-i18next';
 
 import BeforeContent from '@blueprint/components/Server/Files/Browse/BeforeContent';
 import FileButtons from '@blueprint/components/Server/Files/Browse/FileButtons';
@@ -35,6 +37,7 @@ const sortFiles = (files: FileObject[]): FileObject[] => {
 };
 
 export default () => {
+    const { t } = useTranslation('server/files');
     const id = ServerContext.useStoreState((state) => state.server.data!.id);
     const { hash } = useLocation();
     const { data: files, error, mutate } = useFileManagerSwr();
@@ -64,10 +67,10 @@ export default () => {
     }
 
     return (
-        <ServerContentBlock title={'File Manager'} showFlashKey={'files'}>
+        <ServerContentBlock title={t('title')} showFlashKey={'files'}>
             <ErrorBoundary>
                 <BeforeContent />
-                <div className={'flex flex-wrap-reverse md:flex-nowrap mb-4'}>
+                <Card className={'flex flex-wrap-reverse md:flex-nowrap mb-1 mt-2 !rounded-b-none !px-2 !py-3'}>
                     <FileManagerBreadcrumbs
                         renderLeft={
                             <FileActionCheckbox
@@ -85,27 +88,24 @@ export default () => {
                             <NewDirectoryButton />
                             <UploadButton />
                             <NavLink to={`/server/${id}/files/new${window.location.hash}`}>
-                                <Button>New File</Button>
+                                <Button>{t('new-file')}</Button>
                             </NavLink>
                         </div>
                     </Can>
-                </div>
+                </Card>
             </ErrorBoundary>
             {!files ? (
                 <Spinner size={'large'} centered />
             ) : (
-                <>
+                <Card className='!rounded-t-none !p-3'>
                     {!files.length ? (
-                        <p css={tw`text-sm text-neutral-400 text-center`}>This directory seems to be empty.</p>
+                        <p css={tw`text-sm text-neutral-400 text-center`}>{t('empty')}</p>
                     ) : (
                         <CSSTransition classNames={'fade'} timeout={150} appear in>
                             <div>
                                 {files.length > 250 && (
                                     <div css={tw`rounded bg-yellow-400 mb-px p-3`}>
-                                        <p css={tw`text-yellow-900 text-sm text-center`}>
-                                            This directory is too large to display in the browser, limiting the output
-                                            to the first 250 files.
-                                        </p>
+                                        <p css={tw`text-yellow-900 text-sm text-center`}>{t('too-large')}</p>
                                     </div>
                                 )}
                                 {sortFiles(files.slice(0, 250)).map((file) => (
@@ -115,7 +115,7 @@ export default () => {
                             </div>
                         </CSSTransition>
                     )}
-                </>
+                </Card>
             )}
             <AfterContent />
         </ServerContentBlock>
