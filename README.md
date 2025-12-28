@@ -6,7 +6,7 @@
     <img alt="Blueprint" src="https://github.com/BlueprintFramework/framework/assets/103201875/c0072c61-0135-4931-b5fa-ce4ee7d79f4a" height="30">
   </picture>
   <br/>
-  Open-source modding framework for the Pterodactyl panel.
+  Open-source modding framework for the Reviactyl panel. (fork)
   <br/><br/>
   <a href="https://blueprint.zip">Website</a> <b>·</b>
   <a href="https://discord.com/servers/blueprint-1063548024825057451">Community</a> <b>·</b>
@@ -77,5 +77,6 @@ Contributors help shape the future of the Blueprint modding framework. To start 
   © 2023-2025 Emma (prpl.wtf)
   <br/><br/><img src="https://github.com/user-attachments/assets/e6ff62c3-6d99-4e43-850d-62150706e5dd"/>
 </p>
+
 
 
