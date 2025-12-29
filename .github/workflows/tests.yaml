@@ -21,11 +21,11 @@ jobs:
     name: Build frontend only
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Pterodactyl stable
+      - name: Checkout Reviactyl stable
         uses: actions/checkout@v4
         with:
-          repository: pterodactyl/panel
-          ref: v1.11.11
+          repository: reviactyl/panel
+          ref: v2.1.2
           path: panel
 
       - name: Setup Node and Yarn
