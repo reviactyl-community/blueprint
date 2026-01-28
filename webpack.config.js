@@ -1,11 +1,9 @@
-const path = require('path');
-const crypto = require('crypto');
-const fs = require('fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
 const webpack = require('webpack');
-const AssetsManifestPlugin = require('webpack-assets-manifest');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { WebpackAssetsManifest } = require('webpack-assets-manifest');
 const TerserPlugin = require('terser-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 class BuildCachePlugin {
   constructor(options = {}) {
@@ -17,7 +15,7 @@ class BuildCachePlugin {
   loadCache() {
     try {
       return JSON.parse(fs.readFileSync(this.cacheFile, 'utf8'));
-    } catch {
+    } catch (e) {
       return {};
     }
   }
@@ -30,7 +28,7 @@ class BuildCachePlugin {
     try {
       const content = fs.readFileSync(filePath);
       return crypto.createHash('md5').update(content).digest('hex');
-    } catch {
+    } catch (e) {
       return null;
     }
   }
@@ -40,7 +38,9 @@ class BuildCachePlugin {
       compilation.hooks.buildModule.tap('BuildCachePlugin', (module) => {
         if (module.resource) {
           const hash = this.calculateHash(module.resource);
-          if (hash) this.newHashes[module.resource] = hash;
+          if (hash) {
+            this.newHashes[module.resource] = hash;
+          }
         }
       });
     });
@@ -56,37 +56,28 @@ const isProduction = process.env.NODE_ENV === 'production';
 module.exports = {
   cache: true,
   target: 'web',
-  mode: process.env.NODE_ENV,
-  devtool: isProduction ? false : (process.env.DEVTOOL || 'eval-source-map'),
-  performance: { hints: false },
+  mode: isProduction ? 'production' : 'development',
+  devtool: process.env.DEVTOOL || (isProduction ? false : 'eval-source-map'),
+  performance: {
+    hints: false,
+  },
   entry: ['react-hot-loader/patch', './resources/scripts/index.tsx'],
   output: {
     path: path.join(__dirname, '/public/assets'),
-    filename: isProduction ? 'bundle.[chunkhash:8].js' : 'bundle.[hash:8].js',
-    chunkFilename: isProduction ? '[name].[chunkhash:8].js' : '[name].[hash:8].js',
+    filename: isProduction ? 'bundle.[chunkhash:8].js' : 'bundle.[fullhash:8].js',
+    chunkFilename: isProduction ? '[name].[chunkhash:8].js' : '[name].[fullhash:8].js',
     publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
     crossOriginLoading: 'anonymous',
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: [
-          path.resolve(__dirname, 'resources/scripts'),
-          path.resolve(__dirname, 'node_modules/i18next-browser-languagedetector'),
-        ],
-        loader: 'babel-loader',
-        options: {
-          cacheDirectory: true,
-          presets: [['@babel/preset-env', { targets: 'defaults' }]],
-          plugins: ['@babel/plugin-proposal-optional-chaining'],
-        },
-      },
-      {
         test: /\.tsx?$/,
         exclude: /node_modules|\.spec\.tsx?$/,
         loader: 'babel-loader',
-        options: { cacheDirectory: true },
+        options: {
+          cacheDirectory: true,
+        },
       },
       {
         test: /\.mjs$/,
@@ -96,15 +87,13 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          'style-loader',
+          { loader: 'style-loader' },
           {
             loader: 'css-loader',
             options: {
               modules: {
                 auto: true,
-                localIdentName: isProduction
-                  ? '[name]_[hash:base64:8]'
-                  : '[path][name]__[local]',
+                localIdentName: isProduction ? '[name]_[hash:base64:8]' : '[path][name]__[local]',
                 localIdentContext: path.join(__dirname, 'resources/scripts/components'),
               },
               sourceMap: !isProduction,
@@ -120,7 +109,13 @@ module.exports = {
       {
         test: /\.(png|jp(e?)g|gif)$/,
         loader: 'file-loader',
-        options: { name: 'images/[name].[hash:8].[ext]' },
+        options: {
+          name: 'images/[name].[hash:8].[ext]',
+        },
+      },
+      {
+        test: /\.(woff|woff2)$/i,
+        type: 'asset/resource',
       },
       {
         test: /\.svg$/,
@@ -129,48 +124,52 @@ module.exports = {
       {
         test: /\.js$/,
         enforce: 'pre',
-        exclude: /i18next-browser-languagedetector/,
         loader: 'source-map-loader',
       },
     ],
   },
-  stats: 'minimal',
+  stats: {
+    preset: 'minimal',
+    // Ignore warnings emitted by "source-map-loader" when trying to parse source maps from
+    // JS plugins we use, namely brace editor.
+    warningsFilter: [/Failed to parse source map/],
+  },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    fallback: {
+      "path": require.resolve("pathe"),
+      "crypto": require.resolve("crypto-browserify")
+    },
     alias: {
       '@': path.join(__dirname, '/resources/scripts'),
       '@definitions': path.join(__dirname, '/resources/scripts/api/definitions'),
       '@feature': path.join(__dirname, '/resources/scripts/components/server/features'),
       '@blueprint': path.join(__dirname, '/resources/scripts/blueprint'),
     },
+    symlinks: true,
   },
-  externals: { moment: 'moment' },
+  externals: {
+    // Mark moment as an external to exclude it from the Chart.js build since we don't need to use
+    // it for anything.
+    moment: 'moment',
+  },
   plugins: [
-    new BuildCachePlugin({ cacheFile: '.build-cache.json' }),
+    new BuildCachePlugin({
+      cacheFile: '.build-cache.json',
+    }),
     new webpack.EnvironmentPlugin({
-      NODE_ENV: 'development',
+      NODE_ENV: process.env.NODE_ENV || 'development',
       DEBUG: process.env.NODE_ENV !== 'production',
       WEBPACK_BUILD_HASH: Date.now().toString(16),
     }),
-    new AssetsManifestPlugin({
+    new WebpackAssetsManifest({
+      output: 'manifest.json',
       writeToDisk: true,
       publicPath: true,
       integrity: true,
       integrityHashes: ['sha384'],
     }),
-    new ForkTsCheckerWebpackPlugin({
-      typescript: {
-        mode: 'write-references',
-        diagnosticOptions: { semantic: true, syntactic: true },
-      },
-      eslint: isProduction
-        ? undefined
-        : { files: `${path.join(__dirname, '/resources/scripts')}/**/*.{ts,tsx}` },
-    }),
-    process.env.ANALYZE_BUNDLE
-      ? new BundleAnalyzerPlugin({ analyzerHost: '0.0.0.0', analyzerPort: 8081 })
-      : null,
-  ].filter(Boolean),
+  ],
   optimization: {
     usedExports: true,
     sideEffects: false,
@@ -179,22 +178,41 @@ module.exports = {
     minimize: isProduction,
     minimizer: [
       new TerserPlugin({
-        cache: isProduction,
         parallel: true,
         extractComments: false,
         terserOptions: {
           mangle: true,
-          output: { comments: false },
+          output: {
+            comments: false,
+          },
         },
       }),
     ],
   },
-  watchOptions: { poll: 1000, ignored: /node_modules/ },
+  watchOptions: {
+    poll: 1000,
+    ignored: /node_modules/,
+  },
   devServer: {
     compress: true,
-    contentBase: path.join(__dirname, '/public'),
-    publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
+    port: 5173,
+    server: {
+      type: 'https',
+      options: process.env.USE_LOCAL_CERTS
+        ? {
+            ca: path.join(__dirname, '../../docker/certificates/root_ca.pem'),
+            cert: path.join(__dirname, '../../docker/certificates/pterodactyl.test.pem'),
+            key: path.join(__dirname, '../../docker/certificates/pterodactyl.test-key.pem'),
+          }
+        : undefined,
+    },
+    static: {
+      directory: path.join(__dirname, '/public'),
+      publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
+    },
     allowedHosts: ['.pterodactyl.test'],
-    headers: { 'Access-Control-Allow-Origin': '*' },
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   },
 };
