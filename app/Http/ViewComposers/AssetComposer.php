@@ -34,9 +34,14 @@ class AssetComposer
             'pwa' => config('app.pwa', false),
             'debug' => config('app.debug', false),
             'avatar' => config('app.avatar') ?? 'gravatar',
-            'recaptcha' => [
-                'enabled' => config('recaptcha.enabled', false),
-                'siteKey' => config('recaptcha.website_key') ?? '',
+            'captcha' => [
+                'provider' => config('captcha.provider', 'none'),
+                'recaptcha' => [
+                    'siteKey' => config('captcha.recaptcha.website_key') ?? '',
+                ],
+                'turnstile' => [
+                    'siteKey' => config('captcha.turnstile.site_key') ?? '',
+                ],
             ],
             'blueprint' => [
                 'disable_attribution' => $blueprintConfiguration['flags:disable_attribution'] === '1'

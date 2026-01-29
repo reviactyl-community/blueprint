@@ -9,6 +9,7 @@ import { useStoreState } from 'easy-peasy';
 import { useTranslation } from 'react-i18next';
 import Announcement from '@/reviactyl/ui/Announcement';
 import MaintenanceAlert from '@/reviactyl/ui/MaintenanceAlert';
+import QuickLinks from '@/reviactyl/ui/QuickLinks';
 
 import routes from '@/routers/routes';
 import blueprintRoutes from './routes';
@@ -79,6 +80,7 @@ export const NavigationRouter = () => {
             <Route path={'/'} exact>
               <Announcement />
               <MaintenanceAlert />
+              <QuickLinks />
               <DashboardContainer />
             </Route>
 

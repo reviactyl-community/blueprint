@@ -3,6 +3,7 @@ import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
+import Footer from '@/reviactyl/ui/Footer';
 
 export interface PageContentBlockProps {
     title?: string;
@@ -10,7 +11,6 @@ export interface PageContentBlockProps {
     showFlashKey?: string;
 }
 
-import Attribution from '@blueprint/extends/Attribution';
 import BeforeSection from '@blueprint/components/Dashboard/Global/BeforeSection';
 import AfterSection from '@blueprint/components/Dashboard/Global/AfterSection';
 
@@ -30,19 +30,8 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
                     {children}
                 </ContentContainer>
                 <AfterSection/>
-                <ContentContainer css={tw`mb-4`}>
-                    <p css={tw`text-center text-neutral-500 text-xs`}>
-                        <a
-                            rel={'noopener nofollow noreferrer'}
-                            href={'https://pterodactyl.io'}
-                            target={'_blank'}
-                            css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
-                        >
-                            Pterodactyl&reg;
-                        </a>
-                        &nbsp;&copy; 2015 - {new Date().getFullYear()}
-                        <Attribution />
-                    </p>
+                <ContentContainer css={tw`mt-4 mb-4`}>
+                    <Footer />
                 </ContentContainer>
             </>
         </CSSTransition>

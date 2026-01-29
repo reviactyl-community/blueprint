@@ -60,6 +60,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+
+        // Prefer config('app.key') (loaded during normal runtime), but fall back to env()
+        // for very early bootstrap (package discovery.) 
+        // Validate basic expected shape for base64 keys to avoid false positives.
+        $key = config('app.key') ?: env('APP_KEY');
+
+        if (empty($key)) {
+            // No key available
+            return;
+        }
+
+        // If key looks like a base64 key, ensure its long enough.
+        if (is_string($key) && Str::startsWith($key, 'base64:')) {
+            $decoded = substr($key, 7);
+            // base64 of 32 bytes = 44 characters including padding; check length >= 43 to be lenient
+            if (strlen($decoded) < 43) {
+                return;
+            }
+        }
+        
         // Merge Blueprint extension fs config with existing filesystem config.
         $this->app->register(ExtensionfsConfigProvider::class);
 

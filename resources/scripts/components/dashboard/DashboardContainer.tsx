@@ -59,24 +59,20 @@ export default () => {
     return (
         <PageContentBlock className='pr-2' title={t('title')} showFlashKey={'dashboard'}>
             <BeforeContent />
-            <div className='grid lg:grid-cols-2 gap-2 py-4'>
+            <div className='flex items-center justify-between py-4'>
                 <div>
                     <Title className='text-4xl'>{t('title')}</Title>
                 </div>
                 {rootAdmin && (
-                    <div className='flex lg:justify-end justify-center'>
-                        <div className='mb-2 pt-4'>
-                            <div className='flex lg:justify-end sm:justify-center items-center space-x-2'>
-                                <p className='uppercase text-xs text-gray-400'>
-                                    {showOnlyAdmin ? t('other-servers') : t('your-servers')}
-                                </p>
-                                <Switch
-                                    name={'show_all_servers'}
-                                    defaultChecked={showOnlyAdmin}
-                                    onChange={() => setShowOnlyAdmin((s) => !s)}
-                                />
-                            </div>
-                        </div>
+                    <div className='flex items-center space-x-2'>
+                        <p className='uppercase text-xs text-gray-400'>
+                            {showOnlyAdmin ? t('other-servers') : t('your-servers')}
+                        </p>
+                        <Switch
+                            name={'show_all_servers'}
+                            defaultChecked={showOnlyAdmin}
+                            onChange={() => setShowOnlyAdmin((s) => !s)}
+                        />
                     </div>
                 )}
             </div>

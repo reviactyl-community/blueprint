@@ -4,9 +4,14 @@ export interface SiteSettings {
     name: string;
     logo: string;
     locale: string;
-    recaptcha: {
-        enabled: boolean;
-        siteKey: string;
+    captcha: {
+        provider: 'none' | 'recaptcha' | 'turnstile';
+        recaptcha: {
+            siteKey: string;
+        };
+        turnstile: {
+            siteKey: string;
+        };
     };
     blueprint: {
         disable_attribution: boolean;
